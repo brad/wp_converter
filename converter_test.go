@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/csv"
+	"os"
 	"strings"
 	"testing"
 )
@@ -80,8 +81,15 @@ func TestCoordinateBoundaries(t *testing.T) {
 
 func TestSupportedPOITypes(t *testing.T) {
 	types := supportedPOITypes()
-	if len(types) == 0 {
-		t.Error("supportedPOITypes() returned an empty list")
+	expectedCount := 23
+	if len(types) != expectedCount {
+		t.Errorf("supportedPOITypes() returned %d types; want %d", len(types), expectedCount)
+	}
+
+	for _, category := range types {
+		if _, ok := styleMap[category]; !ok {
+			t.Errorf("category %q in supportedPOITypes() is missing from styleMap", category)
+		}
 	}
 }
 
@@ -94,6 +102,21 @@ func TestIconBackgroundColorForType(t *testing.T) {
 	}{
 		{"Established Campground", "tourism_camp_site", "#339933", "circle"},
 		{"Water", "amenity_drinking_water", "#0099ff", "circle"},
+		{"Sanitation Dump Station", "sanidump", "#800080", "circle"},
+		{"Hotel", "hotel", "#0000ff", "circle"},
+		{"Hostel", "hostel", "#0000ff", "circle"},
+		{"Restaurant", "restaurant", "#ff6600", "circle"},
+		{"Tourist Attraction", "tourism_viewpoint", "#ff00ff", "circle"},
+		{"Showers", "shower", "#00ccff", "circle"},
+		{"Propane", "gas_station", "#ffcc00", "circle"},
+		{"Medical", "hospital", "#ff0000", "circle"},
+		{"Pet Services", "veterinary", "#996633", "circle"},
+		{"Financial", "bank", "#009900", "circle"},
+		{"Customs / Immigration", "border_control", "#ff0000", "circle"},
+		{"Checkpoint", "barrier", "#ff3300", "circle"},
+		{"Warning", "warning", "#ff3300", "circle"},
+		{"Wifi", "wifi", "#0099ff", "circle"},
+		{"Other", "tourism_viewpoint", "#808080", "circle"},
 		{"Unknown", "tourism_viewpoint", "#ffff80ff", "star"},
 	}
 
@@ -101,6 +124,26 @@ func TestIconBackgroundColorForType(t *testing.T) {
 		icon, color, bg := iconBackgroundColorForType(tc.typ)
 		if icon != tc.expIcon || color != tc.expColor || bg != tc.expBg {
 			t.Errorf("iconBackgroundColorForType(%q) = %q, %q, %q; want %q, %q, %q", tc.typ, icon, color, bg, tc.expIcon, tc.expColor, tc.expBg)
+		}
+	}
+}
+
+func TestSampleDataCategoriesSupported(t *testing.T) {
+	f, err := os.Open("sample_data/canada_24_07.csv")
+	if err != nil {
+		t.Fatalf("Failed to open sample CSV data: %v", err)
+	}
+	defer f.Close()
+
+	places := parseCvsData(f)
+	if len(places) == 0 {
+		t.Fatal("parseCvsData returned no places from sample_data/canada_24_07.csv")
+	}
+
+	supported := supportedPOITypes()
+	for _, p := range places {
+		if !isValueInList(p.Category, supported) {
+			t.Errorf("Category %q in sample_data is not in supportedPOITypes()", p.Category)
 		}
 	}
 }
