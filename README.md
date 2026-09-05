@@ -47,6 +47,21 @@ If you need to limit to a smaller area, check a maps app (e.g. Google Maps)
 - Shopping
 - Laundromat
 - Fuel Station
+- Sanitation Dump Station
+- Hotel
+- Hostel
+- Restaurant
+- Tourist Attraction
+- Showers
+- Propane
+- Medical
+- Pet Services
+- Financial
+- Customs / Immigration
+- Checkpoint
+- Warning
+- Wifi
+- Other
 
 # Planned Work
 
